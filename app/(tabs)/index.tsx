@@ -1,14 +1,39 @@
-import { StyleSheet } from 'react-native';
+import MovieCard from "@/components/MovieCard";
+import { useMovies } from "@/context/movies";
+import { useMemo, useState } from "react";
+import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function MoviesScreen() {
+  const { movies } = useMovies();
+  const [query, setQuery] = useState("");
 
-export default function TabOneScreen() {
+  const filteredMovies = useMemo(
+    () =>
+      movies.filter((movie) =>
+        movie.title.toLowerCase().includes(query.trim().toLowerCase()),
+      ),
+    [movies, query],
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <TextInput
+        style={styles.search}
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search movies"
+        placeholderTextColor="#9ca3af"
+      />
+
+      <FlatList
+        data={filteredMovies}
+        keyExtractor={(movie) => movie.id}
+        renderItem={({ item }) => <MovieCard movie={item} />}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No movie matches “{query}”</Text>
+        }
+      />
     </View>
   );
 }
@@ -16,16 +41,25 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#f3f4f6",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  search: {
+    backgroundColor: "#ffffff",
+    margin: 16,
+    marginBottom: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    fontSize: 16,
+    color: "#111827",
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  list: {
+    padding: 16,
+  },
+  empty: {
+    textAlign: "center",
+    color: "#6b7280",
+    fontSize: 16,
+    marginTop: 40,
   },
 });
